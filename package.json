@@ -1,0 +1,22 @@
+{
+  "name": "justrp-cdn",
+  "version": "1.0.0",
+  "description": "CDN auto-heberge Just'RP - images et videos, acces OAuth2 Discord",
+  "main": "server.js",
+  "author": "John",
+  "license": "UNLICENSED",
+  "private": true,
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-session": "^1.18.0",
+    "multer": "^1.4.5-lts.1",
+    "session-file-store": "^1.5.0"
+  }
+}

@@ -1,0 +1,11 @@
+# Dépendances (se réinstallent avec npm install)
+node_modules/
+
+# Secrets — JAMAIS sur GitHub
+.env
+
+# Logs éventuels
+*.log
+
+# Système
+.DS_Store

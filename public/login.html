@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Just'RP CDN</title>
+<link rel="icon" href="/icone.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --fond:#0B0D10; --surface:#111418; --surface2:#171B21;
+    --bord:#22272E; --bord-clair:#2E353E;
+    --texte:#EDF0F3; --discret:#7E8A97; --tres-discret:#4A545F;
+    --or:#F0A825; --rouge:#E2604A; --discord:#5865F2;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; min-height:100vh; background:var(--fond); color:var(--texte);
+    font-family:'Inter',system-ui,sans-serif; font-size:14px;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    padding:30px 22px; position:relative; overflow-x:hidden;
+  }
+
+  /* Fond Los Santos, fondu vers le noir sur les bords */
+  .fond{
+    position:fixed; inset:0; z-index:0;
+    background:url('/fond.jpg') center 35% / cover no-repeat;
+  }
+  .fond::after{
+    content:''; position:absolute; inset:0;
+    background:
+      radial-gradient(ellipse at 50% 45%, rgba(11,13,16,.62) 0%, rgba(11,13,16,.93) 68%, var(--fond) 100%),
+      linear-gradient(180deg, rgba(11,13,16,.55) 0%, rgba(11,13,16,.2) 40%, var(--fond) 100%);
+  }
+
+  .carte{
+    position:relative; z-index:1;
+    width:100%; max-width:420px; text-align:center;
+    background:rgba(17,20,24,.9); backdrop-filter:blur(12px);
+    border:1px solid var(--bord); border-radius:8px;
+    padding:42px 32px 34px;
+  }
+
+  .micro{
+    font-family:'Barlow Condensed',sans-serif; font-weight:600;
+    text-transform:uppercase; letter-spacing:.24em; font-size:10.5px;
+    color:var(--tres-discret); line-height:2.1;
+  }
+
+  .logo{width:100%; max-width:270px; height:auto; display:block; margin:16px auto 22px}
+
+  .trait{width:40px; height:2px; background:var(--or); margin:0 auto 22px}
+
+  .accroche{
+    font-family:'Barlow Condensed',sans-serif; font-weight:600;
+    text-transform:uppercase; letter-spacing:.18em; font-size:13px;
+    color:var(--discret); line-height:2; margin:0 0 30px;
+  }
+  .accroche b{color:var(--or); font-weight:600}
+
+  .bouton-discord{
+    display:flex; align-items:center; justify-content:center; gap:10px;
+    width:100%; padding:14px 18px; border:none; border-radius:5px;
+    background:var(--discord); color:#fff; cursor:pointer;
+    font:500 14px/1 'Inter',sans-serif; text-decoration:none;
+    transition:filter .15s, transform .15s;
+  }
+  .bouton-discord:hover{filter:brightness(1.13); transform:translateY(-1px)}
+  .bouton-discord:focus-visible{outline:2px solid var(--or); outline-offset:3px}
+  .bouton-discord svg{width:20px; height:20px; flex:none}
+
+  .note{color:var(--tres-discret); font-size:11.5px; margin:22px 0 0; line-height:1.8}
+
+  .alerte{
+    display:none; text-align:left; margin:0 0 26px;
+    background:var(--surface2); border:1px solid var(--bord);
+    border-left:3px solid var(--rouge); border-radius:4px;
+    padding:14px 16px; font-size:13px; line-height:1.65; color:var(--discret);
+  }
+  .alerte.visible{display:block}
+  .alerte strong{
+    display:block; margin-bottom:4px; color:var(--rouge);
+    font-family:'Barlow Condensed',sans-serif; font-weight:700;
+    text-transform:uppercase; letter-spacing:.12em; font-size:13px;
+  }
+
+  .pied{
+    position:relative; z-index:1; margin-top:26px;
+    display:flex; align-items:center; gap:14px;
+  }
+  .pied .filet{width:40px; height:1px; background:var(--or)}
+
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="fond"></div>
+
+<main class="carte">
+  <div class="micro">Los Santos · Roleplay · No limits</div>
+  <img class="logo" src="/logo.png" alt="Just'RP CDN">
+  <div class="trait"></div>
+  <p class="accroche">Vos fichiers. Notre infra.<br><b>Votre RP.</b></p>
+
+  <div class="alerte" id="alerte"></div>
+
+  <a class="bouton-discord" href="/auth/login">
+    <svg viewBox="0 0 127 96" fill="currentColor" aria-hidden="true">
+      <path d="M107.7 8.07A105.15 105.15 0 0 0 81.47 0a72.06 72.06 0 0 0-3.36 6.83 97.68 97.68 0 0 0-29.11 0A72.37 72.37 0 0 0 45.64 0a105.89 105.89 0 0 0-26.25 8.09C2.79 32.65-1.71 56.6.54 80.21a105.73 105.73 0 0 0 32.17 16.15 77.7 77.7 0 0 0 6.89-11.11 68.42 68.42 0 0 1-10.85-5.18c.91-.66 1.8-1.34 2.66-2a75.57 75.57 0 0 0 64.32 0c.87.71 1.76 1.39 2.66 2a68.68 68.68 0 0 1-10.87 5.19 77 77 0 0 0 6.89 11.1 105.25 105.25 0 0 0 32.19-16.14c2.64-27.38-4.51-51.11-18.9-72.15ZM42.45 65.69C36.18 65.69 31 60 31 53s5-12.74 11.43-12.74S54 46 53.89 53s-5.05 12.69-11.44 12.69Zm42.24 0C78.41 65.69 73.25 60 73.25 53s5-12.74 11.44-12.74S96.23 46 96.12 53s-5.04 12.69-11.43 12.69Z"/>
+    </svg>
+    Se connecter avec Discord
+  </a>
+
+  <p class="note">
+    L'accès est réservé aux membres du staff.<br>
+    Les fichiers hébergés restent publics.
+  </p>
+</main>
+
+<div class="pied">
+  <span class="filet"></span>
+  <span class="micro">By Just'RP</span>
+  <span class="filet"></span>
+</div>
+
+<script>
+// Le serveur redirige vers /?erreur=... quand la connexion echoue.
+const MESSAGES = {
+  role: {
+    titre: 'Rôle manquant',
+    texte: "Ton compte Discord n'a pas le rôle requis pour accéder au CDN. "
+         + "Contacte un administrateur si tu penses que c'est une erreur.",
+  },
+  serveur: {
+    titre: 'Serveur introuvable',
+    texte: "Tu ne fais pas partie du Discord Just'RP. Rejoins-le, puis réessaie.",
+  },
+  oauth: {
+    titre: 'Connexion impossible',
+    texte: "Discord n'a pas répondu correctement. Réessaie dans un instant.",
+  },
+  state: {
+    titre: 'Session expirée',
+    texte: "La demande de connexion n'est plus valide. Relance la connexion.",
+  },
+};
+
+const code = new URLSearchParams(location.search).get('erreur');
+if (code && MESSAGES[code]) {
+  const boite = document.getElementById('alerte');
+  boite.innerHTML = '<strong>' + MESSAGES[code].titre + '</strong>' + MESSAGES[code].texte;
+  boite.classList.add('visible');
+
+  // Nettoie l'URL : un rafraichissement ne doit pas re-afficher l'erreur
+  history.replaceState(null, '', location.pathname);
+}
+</script>
+</body>
+</html>
