@@ -325,8 +325,9 @@
     .compte .nom{max-width:80px}
   }
 </style>
+<link rel="stylesheet" href="/design.css">
 </head>
-<body>
+<body class="application">
 
 <header>
   <div class="conteneur barre">
@@ -335,7 +336,7 @@
       <span class="mot">CDN</span>
     </div>
 
-    <nav>
+    <nav aria-label="Navigation principale">
       <button data-vue="accueil" class="actif">Accueil</button>
       <button data-vue="fichiers">Fichiers</button>
       <button data-vue="stats">Statistiques</button>
@@ -356,16 +357,17 @@
   <div class="conteneur">
     <div class="hero-haut">
       <div class="hero-gauche">
-        <div class="micro">Los Santos<br>Roleplay<br>No limits</div>
-        <img class="hero-logo" src="/logo.png" alt="Just'RP CDN">
-        <div class="trait"></div>
-        <p class="accroche">Vos fichiers.<br>Notre infra.<br><b>Votre RP.</b></p>
+        <div class="micro hero-eyebrow">LE MÉDIA AU SERVICE DU ROLEPLAY</div>
+        <h1>Vos fichiers.<br>Votre univers.<br><em>Just’RP.</em></h1>
+        <p class="hero-description">Un seul endroit pour tous tes médias.<br>Dépose, retrouve et partage tes créations.</p>
+        <button class="bouton principal hero-ajouter" id="ajouter">Ajouter des fichiers <span aria-hidden="true">↗</span></button>
       </div>
-      <div class="hero-droite">
-        <div class="micro">FiveM<br>Community<br>Creators<br>Los Santos<br>Forever</div>
-      </div>
+      <div class="hero-droite"><div class="micro">01 / LOS SANTOS</div><p>Une ville. Des milliers d’histoires.</p></div>
     </div>
-
+  </div>
+</section>
+<section class="conteneur depot-section" aria-label="Envoyer des médias">
+    <div class="intro-depot"><div><span class="micro">VOTRE ESPACE CRÉATIF</span><h2>Tout commence ici<span>.</span></h2></div><span class="micro">IMAGES & VIDÉOS</span></div>
     <div class="depot" id="depot" tabindex="0" role="button" aria-label="Ajouter des fichiers">
       <svg class="nuage" viewBox="0 0 24 24" fill="none" stroke="currentColor"
            stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -373,22 +375,21 @@
         <path d="M12 20.5V10.6"/>
         <path d="m8.6 13.7 3.4-3.3 3.4 3.3"/>
       </svg>
-      <h2>Déposer des <em>fichiers</em></h2>
-      <p>Glisse tes images ou tes vidéos ici, ou clique pour les sélectionner</p>
+      <div class="depot-texte"><h2>Glisse tes fichiers ici</h2>
+      <p>ou clique pour parcourir ton appareil</p></div>
       <div class="formats" id="formats">PNG · JPG · WEBP · GIF · MP4 · WEBM · MOV · MKV</div>
       <input type="file" id="champ"
              accept="image/png,image/jpeg,image/webp,image/gif,video/mp4,video/webm,video/quicktime,video/x-matroska"
              multiple hidden>
       <div class="progression"><i id="jauge"></i></div>
     </div>
-  </div>
 </section>
 
 <main class="conteneur">
 
   <section class="panneau" id="vue-fichiers">
     <div class="titre-section">
-      <h2>Fichiers</h2>
+      <h2>Bibliothèque</h2>
       <div class="filet"></div>
       <span class="compteur" id="compteur"></span>
     </div>
@@ -398,8 +399,15 @@
       <button data-portee="tous">Tous les fichiers</button>
     </div>
 
+    <div class="outils-fichiers">
+      <div class="filtres" role="group" aria-label="Type de média">
+        <button data-type="tous" aria-pressed="true">Tout</button><button data-type="image" aria-pressed="false">Images</button><button data-type="video" aria-pressed="false">Vidéos</button>
+      </div>
+      <label class="tri">Trier <select id="tri"><option value="recent">Plus récents</option><option value="nom">Nom : A à Z</option><option value="taille">Plus volumineux</option></select></label>
+      <div class="affichage" role="group" aria-label="Affichage des fichiers"><button data-affichage="grille" aria-pressed="true">Grille</button><button data-affichage="liste" aria-pressed="false">Liste</button></div>
+    </div>
     <div class="recherche">
-      <input type="search" id="recherche" placeholder="Rechercher par nom de fichier, mois ou auteur…" autocomplete="off">
+      <input type="search" id="recherche" aria-label="Rechercher par nom, mois ou auteur" placeholder="Rechercher par nom de fichier, mois ou auteur…" autocomplete="off">
       <button class="effacer" id="effacer" hidden aria-label="Effacer la recherche">&times;</button>
     </div>
 
@@ -481,7 +489,12 @@
   </div>
 </footer>
 
-<div id="toast"></div>
+<div id="toast" role="status" aria-live="polite"></div>
+<dialog id="apercu" aria-labelledby="apercu-titre">
+  <div class="apercu-entete"><h2 id="apercu-titre">Aperçu du fichier</h2><button class="bouton" id="fermer-apercu" aria-label="Fermer l’aperçu">Fermer ×</button></div>
+  <div id="apercu-media"></div><p id="apercu-meta"></p>
+  <div class="actions"><a class="bouton principal" id="apercu-ouvrir" target="_blank" rel="noopener">Ouvrir l’original ↗</a><button class="bouton" id="apercu-copier">Copier le lien</button></div>
+</dialog>
 
 <script>
 const depot     = document.getElementById('depot');
@@ -503,6 +516,8 @@ let TOUS     = [];     // fichiers renvoyes par l'API pour la portee courante
 let AFFICHES = 0;      // combien on en montre actuellement
 let PORTEE   = 'mes';  // 'mes' ou 'tous' (ce dernier reserve aux admins)
 let ADMIN    = false;
+let TYPE = 'tous';
+let TRI = 'recent';
 
 /* --- Utilitaires --------------------------------------------------- */
 function notifier(texte, type = '') {
@@ -535,10 +550,15 @@ function estVideo(f) { return (f.type || '').startsWith('video/'); }
 
 // Met en evidence la partie du texte qui correspond a la recherche
 function surligner(texte, terme) {
-  const propre = echapper(texte);
-  if (!terme) return propre;
-  const motif = terme.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  return propre.replace(new RegExp(motif, 'gi'), m => '<mark>' + m + '</mark>');
+  const source = String(texte);
+  if (!terme) return echapper(source);
+  const lower = source.toLowerCase(), needle = terme.toLowerCase();
+  let result = '', cursor = 0, index;
+  while ((index = lower.indexOf(needle, cursor)) !== -1) {
+    result += echapper(source.slice(cursor, index)) + '<mark>' + echapper(source.slice(index, index + terme.length)) + '</mark>';
+    cursor = index + terme.length;
+  }
+  return result + echapper(source.slice(cursor));
 }
 
 /* --- Navigation ---------------------------------------------------- */
@@ -609,7 +629,8 @@ async function charger() {
     AFFICHES = PAR_PAGE;
     afficher();
   } catch {
-    liste.innerHTML = '<div class="vide">Impossible de charger la liste.</div>';
+    liste.innerHTML = '<div class="vide">Impossible de charger la liste. <button class="bouton" id="reessayer">Réessayer</button></div>';
+    document.getElementById('reessayer').addEventListener('click', charger);
   }
 }
 
@@ -623,11 +644,9 @@ zonePortee.querySelectorAll('button').forEach(b =>
 
 function filtrer() {
   const terme = recherche.value.trim().toLowerCase();
-  if (!terme) return TOUS;
-  return TOUS.filter(f =>
-    f.chemin.toLowerCase().includes(terme) ||
-    String(f.auteur).toLowerCase().includes(terme)
-  );
+  return TOUS.filter(f => (TYPE === 'tous' || f.famille === TYPE) &&
+    (!terme || f.chemin.toLowerCase().includes(terme) || String(f.auteur).toLowerCase().includes(terme)))
+    .sort((a,b) => TRI === 'nom' ? a.chemin.localeCompare(b.chemin, 'fr') : TRI === 'taille' ? b.taille - a.taille : b.date - a.date);
 }
 
 function afficher() {
@@ -635,7 +654,7 @@ function afficher() {
   const filtres = filtrer();
   const visibles = filtres.slice(0, AFFICHES);
 
-  compteur.textContent = terme
+  compteur.textContent = (terme || TYPE !== 'tous')
     ? filtres.length + ' sur ' + TOUS.length
     : (TOUS.length ? TOUS.length + ' fichier(s)' : '');
 
@@ -643,7 +662,7 @@ function afficher() {
   effacer.hidden = !terme;
 
   if (!visibles.length) {
-    liste.innerHTML = terme
+    liste.innerHTML = (terme || TYPE !== 'tous')
       ? '<div class="vide">Aucun fichier ne correspond à cette recherche.</div>'
       : '<div class="vide">Tu n\'as encore envoyé aucun fichier. Dépose le premier ci-dessus.</div>';
     return;
@@ -654,32 +673,34 @@ function afficher() {
     const video  = f.famille === 'video';
     const ext    = f.chemin.split('.').pop().toUpperCase();
     const commun = f.auteur === 'commun';
+    const url = echapper(f.url);
 
     // "#t=0.5" demande au navigateur l'image a 0,5 s : miniature gratuite
     const vignette = video
-      ? '<video class="vignette" src="' + f.url + '#t=0.5" preload="metadata" muted playsinline></video>'
-      : '<img class="vignette" src="' + f.url + '" alt="" loading="lazy">';
+      ? '<video class="vignette" src="' + url + '#t=0.5" preload="metadata" muted playsinline></video>'
+      : '<img class="vignette" src="' + url + '" alt="" loading="lazy">';
 
     const ligne = document.createElement('div');
     ligne.className = 'ligne';
     ligne.innerHTML =
-      '<div class="cadre-vignette ' + (video ? 'est-video' : '') + '">' + vignette + '</div>' +
+      '<button class="cadre-vignette ' + (video ? 'est-video' : '') + '" aria-label="Aperçu de ' + echapper(f.chemin) + '">' + vignette + '<span class="format-vignette">' + echapper(ext) + '</span></button>' +
       '<div class="infos">' +
         '<div class="chemin">' + surligner(f.chemin, terme) + '</div>' +
         '<div class="meta">' +
-          '<span class="type">' + ext + '</span> · ' + poids(f.taille) + ' · ' + quand(f.date) +
+          '<span class="type">' + echapper(ext) + '</span> · ' + poids(f.taille) + ' · ' + quand(f.date) +
           ' · <span class="auteur ' + (commun ? 'commun' : '') + '">' + echapper(f.auteur) + '</span>' +
         '</div>' +
       '</div>' +
       '<div class="actions">' +
-        '<a class="bouton principal" href="' + f.url + '" target="_blank" rel="noopener">Ouvrir</a>' +
+        '<a class="bouton principal" href="' + url + '" target="_blank" rel="noopener">Ouvrir</a>' +
         '<button class="bouton copier">Copier le lien</button>' +
         '<button class="bouton suppr" ' + (f.supprimable ? '' : 'disabled') + '>Supprimer</button>' +
       '</div>';
 
+    ligne.querySelector('.cadre-vignette').addEventListener('click', () => ouvrirApercu(f));
     const btnCopier = ligne.querySelector('.copier');
     btnCopier.addEventListener('click', async () => {
-      await navigator.clipboard.writeText(f.url);
+      if (!await copierLien(f.url)) return;
       btnCopier.textContent = 'Lien copié';
       btnCopier.classList.add('copie');
       setTimeout(() => {
@@ -769,6 +790,7 @@ function envoyerAvecProgression(donnees, surAvancement) {
 }
 
 async function envoyer(fichiers) {
+  if (depot.classList.contains('envoi')) return;
   fichiers = [...fichiers];
   if (!fichiers.length) return;
 
@@ -801,8 +823,8 @@ async function envoyer(fichiers) {
     if (!d.ok) throw new Error(d.erreur);
 
     if (d.fichiers.length === 1) {
-      await navigator.clipboard.writeText(d.fichiers[0].url);
-      notifier('Fichier ajouté — lien copié', 'ok');
+      const copie = await copierLien(d.fichiers[0].url);
+      notifier(copie ? 'Fichier ajouté — lien copié' : 'Fichier ajouté — utilise Ouvrir pour récupérer son lien', 'ok');
     } else {
       notifier(d.fichiers.length + ' fichiers ajoutés', 'ok');
     }
@@ -819,6 +841,7 @@ async function envoyer(fichiers) {
   }
 }
 
+document.getElementById('ajouter').addEventListener('click', () => { if (!depot.classList.contains('envoi')) champ.click(); });
 depot.addEventListener('click', () => champ.click());
 depot.addEventListener('keydown', e => {
   if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); champ.click(); }
@@ -837,6 +860,40 @@ window.addEventListener('paste', e => {
   );
   if (medias.length) envoyer(medias);
 });
+
+async function copierLien(url) {
+  try { await navigator.clipboard.writeText(url); return true; }
+  catch { notifier('Copie indisponible. Ouvre le fichier pour récupérer son lien.', 'ko'); return false; }
+}
+const apercu = document.getElementById('apercu');
+let fichierApercu = null;
+function ouvrirApercu(f) {
+  fichierApercu = f;
+  document.getElementById('apercu-titre').textContent = f.chemin;
+  document.getElementById('apercu-meta').textContent = poids(f.taille) + ' · ' + quand(f.date) + ' · ' + f.auteur;
+  document.getElementById('apercu-ouvrir').href = f.url;
+  const media = document.createElement(f.famille === 'video' ? 'video' : 'img');
+  media.src = f.url;
+  if (f.famille === 'video') { media.controls = true; media.playsInline = true; }
+  else media.alt = f.chemin;
+  document.getElementById('apercu-media').replaceChildren(media);
+  apercu.showModal();
+}
+document.getElementById('fermer-apercu').addEventListener('click', () => apercu.close());
+apercu.addEventListener('close', () => { document.getElementById('apercu-media').replaceChildren(); fichierApercu = null; });
+document.getElementById('apercu-copier').addEventListener('click', async () => {
+  if (fichierApercu && await copierLien(fichierApercu.url)) notifier('Lien copié', 'ok');
+});
+document.querySelectorAll('[data-type]').forEach(button => button.addEventListener('click', () => {
+  TYPE = button.dataset.type; AFFICHES = PAR_PAGE;
+  document.querySelectorAll('[data-type]').forEach(b => b.setAttribute('aria-pressed', String(b === button)));
+  afficher();
+}));
+document.getElementById('tri').addEventListener('change', e => { TRI = e.target.value; AFFICHES = PAR_PAGE; afficher(); });
+document.querySelectorAll('[data-affichage]').forEach(button => button.addEventListener('click', () => {
+  liste.classList.toggle('mode-liste', button.dataset.affichage === 'liste');
+  document.querySelectorAll('[data-affichage]').forEach(b => b.setAttribute('aria-pressed', String(b === button)));
+}));
 
 charger();
 </script>
